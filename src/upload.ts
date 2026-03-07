@@ -76,10 +76,10 @@ ui.pauseButton.addEventListener("click", () => {
 });
 
 ui.cancelButton.addEventListener("click", () => {
-  if (state.kind === "uploading" || state.kind === "retrying") {
-    uploader.abortUpload();
+  const result = dispatch({ type: "CANCEL" });
+  if (result.ok) {
+    uploader.abortUpload(true);
   }
-  dispatch({ type: "CANCEL" });
 });
 
 ui.manualRetryButton.addEventListener("click", () => {
