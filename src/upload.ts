@@ -1,7 +1,7 @@
-import type { UploadState, UploadEvent, TransitionResult } from "./state";
-import { transition } from "./state";
-import { createUI } from "./ui";
-import { createUploader } from "./uploader";
+import type { UploadState, UploadEvent, TransitionResult } from "./upload-state";
+import { transition } from "./upload-state";
+import { createUI } from "./upload-ui";
+import { createUploader } from "./upload-client";
 import { setupIntl } from "./i18n";
 
 const intl = setupIntl();
