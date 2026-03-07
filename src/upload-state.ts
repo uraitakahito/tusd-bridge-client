@@ -64,22 +64,12 @@ export type UploadEvent =
   | { type: "CANCEL" }
   | { type: "RESET" };
 
-export type TransitionResult =
-  | { ok: true; state: UploadState }
-  | { ok: false; state: UploadState; from: UploadState["kind"]; eventType: UploadEvent["type"] };
-
-function accepted(state: UploadState): TransitionResult {
-  return { ok: true, state };
-}
-
-function rejected(state: UploadState, event: UploadEvent): TransitionResult {
-  return { ok: false, state, from: state.kind, eventType: event.type };
-}
+import { type TransitionResult, accepted, rejected } from "./fsm";
 
 export function transition(
   state: UploadState,
   event: UploadEvent,
-): TransitionResult {
+): TransitionResult<UploadState, UploadEvent> {
   switch (event.type) {
     case "START":
       if (state.kind !== "idle") return rejected(state, event);

@@ -16,6 +16,7 @@
  * @module
  */
 
+import { type TransitionResult, accepted, rejected } from "./fsm";
 import type { FileInfo } from "./types";
 
 export type FilesState =
@@ -33,18 +34,6 @@ export type FilesEvent =
   | { type: "RECONNECT_FAILED"; message: string }
   | { type: "RETRY" };
 
-export type FilesTransitionResult =
-  | { ok: true; state: FilesState }
-  | { ok: false; state: FilesState; from: FilesState["kind"]; eventType: FilesEvent["type"] };
-
-function accepted(state: FilesState): FilesTransitionResult {
-  return { ok: true, state };
-}
-
-function rejected(state: FilesState, event: FilesEvent): FilesTransitionResult {
-  return { ok: false, state, from: state.kind, eventType: event.type };
-}
-
 function upsertFile(files: FileInfo[], file: FileInfo): FileInfo[] {
   const index = files.findIndex((f) => f.upload_id === file.upload_id);
   if (index >= 0) {
@@ -58,7 +47,7 @@ function upsertFile(files: FileInfo[], file: FileInfo): FileInfo[] {
 export function transition(
   state: FilesState,
   event: FilesEvent,
-): FilesTransitionResult {
+): TransitionResult<FilesState, FilesEvent> {
   switch (event.type) {
     case "FILES_LOADED":
       if (state.kind !== "loading") return rejected(state, event);
