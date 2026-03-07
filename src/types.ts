@@ -1,4 +1,4 @@
-import type { UploadEvent } from "./state";
+import type { UploadEvent } from "./upload-state";
 
 export type UploadEventHandler = (event: UploadEvent) => void;
 

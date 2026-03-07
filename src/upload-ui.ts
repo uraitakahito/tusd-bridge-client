@@ -1,5 +1,5 @@
 import type { IntlShape } from "@formatjs/intl";
-import type { UploadState } from "./state";
+import type { UploadState } from "./upload-state";
 
 export interface UI {
   endpointInput: HTMLInputElement;

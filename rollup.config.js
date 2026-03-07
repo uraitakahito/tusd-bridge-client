@@ -56,8 +56,8 @@ function onwarn(warning, defaultHandler) {
 
 export default [
   {
-    input: "src/index.ts",
-    output: { file: "dist/bundle.js", format: "iife", sourcemap: true },
+    input: "src/upload.ts",
+    output: { file: "dist/upload-bundle.js", format: "iife", sourcemap: true },
     plugins,
     onwarn,
   },
