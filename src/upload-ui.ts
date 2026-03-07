@@ -20,7 +20,7 @@ export function createUI(root: HTMLElement, intl: IntlShape<string>): UI {
   endpointLabel.className = "endpoint-label";
   const endpointInput = document.createElement("input");
   endpointInput.type = "text";
-  endpointInput.value = "http://localhost:8080/files/";
+  endpointInput.value = "";
   endpointInput.className = "endpoint-input";
   endpointLabel.appendChild(endpointInput);
 

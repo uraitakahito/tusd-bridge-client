@@ -5,11 +5,13 @@ import { createUploader } from "./upload-client";
 import { setupIntl } from "./i18n";
 import uploadEn from "./locales/upload.en.json";
 import uploadJa from "./locales/upload.ja.json";
+import { config } from "./config";
 
 const intl = setupIntl({ en: uploadEn, ja: uploadJa });
 
 const root = document.getElementById("app")!;
 const ui = createUI(root, intl);
+ui.endpointInput.value = config.tusEndpoint;
 
 let state: UploadState = { kind: "idle" };
 
