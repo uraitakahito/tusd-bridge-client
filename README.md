@@ -3,7 +3,7 @@
 [tusd](https://tus.github.io/tusd/)や[tusd-bridge](https://github.com/uraitakahito/tusd-bridge) と連携するフロントエンドWebアプリケーション。
 
 - **tusd**: [TUSプロトコル](https://tus.io/)対応のファイルアップロードサーバー
-- **tusd-bridge**: tusdのgRPCフックを受け取り、アップロードイベントを永続化したら通知したりするブリッジサーバー
+- **tusd-bridge**: tusdのgRPCフックから呼び出され、アップロードイベントやファイルのメタ情報を永続化したり、tusd-bridge-clientに通知したりする
 
 ## 開発環境のセットアップ (Docker)
 
@@ -27,7 +27,6 @@ npm ci
 
 ```sh
 npm run build      # Rollupでビルド (dist/bundle.js を生成)
-npm run lint       # ESLintでコード検査
 npm run lint:fix   # ESLintで自動修正
 npm run docs       # TypeDocでAPIドキュメント生成
 ```
