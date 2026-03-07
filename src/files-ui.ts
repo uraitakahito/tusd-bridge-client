@@ -33,6 +33,7 @@ export function createFilesUI(
     "files.column.filename",
     "files.column.size",
     "files.column.status",
+    "files.column.progress",
     "files.column.updatedAt",
   ];
   for (const col of columns) {
@@ -90,6 +91,15 @@ export function createFilesUI(
     statusCell.textContent = file.display_status;
     statusCell.className = `status-${file.display_status}`;
     row.appendChild(statusCell);
+
+    const progressCell = document.createElement("td");
+    if (file.file_offset != null && file.file_size != null && file.file_size > 0) {
+      const pct = (file.file_offset / file.file_size * 100).toFixed(1);
+      progressCell.textContent = `${pct}%`;
+    } else {
+      progressCell.textContent = "-";
+    }
+    row.appendChild(progressCell);
 
     const dateCell = document.createElement("td");
     dateCell.textContent = file.updated_at.replace("T", " ").slice(0, 19);

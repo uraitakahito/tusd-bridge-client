@@ -3,6 +3,7 @@
   "files.column.filename": "Filename",
   "files.column.size": "Size",
   "files.column.status": "Status",
+  "files.column.progress": "Progress",
   "files.column.updatedAt": "Updated",
   "files.loading": "Loading...",
   "files.empty": "No files",
