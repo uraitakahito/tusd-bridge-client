@@ -3,7 +3,6 @@ import type { FileInfo, FilesResponse } from "./types";
 
 export interface FilesClient {
   fetchFiles(): Promise<void>;
-  connectSSE(lastEventId: number): void;
   disconnectSSE(): void;
 }
 
@@ -13,6 +12,46 @@ export function createFilesClient(
 ): FilesClient {
   let eventSource: EventSource | null = null;
   let hasConnectedOnce = false;
+
+  function startSSE(lastEventId: number): void {
+    if (eventSource) {
+      eventSource.close();
+    }
+
+    hasConnectedOnce = false;
+    const url = `${baseUrl}/files/events?cursor=${String(lastEventId)}`;
+    eventSource = new EventSource(url);
+
+    eventSource.addEventListener("open", () => {
+      if (hasConnectedOnce) {
+        dispatch({ type: "SSE_RECONNECT" });
+      }
+      hasConnectedOnce = true;
+    });
+
+    eventSource.addEventListener(
+      "file_status_changed",
+      (event: MessageEvent<string>) => {
+        const file = JSON.parse(event.data) as FileInfo;
+        const eventId = Number(event.lastEventId);
+        dispatch({ type: "FILE_EVENT", file, eventId });
+      },
+    );
+
+    eventSource.addEventListener("error", () => {
+      if (!eventSource) return;
+      if (eventSource.readyState === EventSource.CLOSED) {
+        dispatch({
+          type: "RECONNECT_FAILED",
+          message: "SSE connection closed",
+        });
+      } else if (eventSource.readyState === EventSource.CONNECTING) {
+        if (hasConnectedOnce) {
+          dispatch({ type: "SSE_DISCONNECT" });
+        }
+      }
+    });
+  }
 
   return {
     async fetchFiles() {
@@ -31,51 +70,12 @@ export function createFilesClient(
           files: data.files,
           lastEventId: data.last_event_id,
         });
+        startSSE(data.last_event_id);
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : "Unknown error";
         dispatch({ type: "LOAD_ERROR", message });
       }
-    },
-
-    connectSSE(lastEventId: number) {
-      if (eventSource) {
-        eventSource.close();
-      }
-
-      hasConnectedOnce = false;
-      const url = `${baseUrl}/files/events?cursor=${String(lastEventId)}`;
-      eventSource = new EventSource(url);
-
-      eventSource.addEventListener("open", () => {
-        if (hasConnectedOnce) {
-          dispatch({ type: "SSE_RECONNECT" });
-        }
-        hasConnectedOnce = true;
-      });
-
-      eventSource.addEventListener(
-        "file_status_changed",
-        (event: MessageEvent<string>) => {
-          const file = JSON.parse(event.data) as FileInfo;
-          const eventId = Number(event.lastEventId);
-          dispatch({ type: "FILE_EVENT", file, eventId });
-        },
-      );
-
-      eventSource.addEventListener("error", () => {
-        if (!eventSource) return;
-        if (eventSource.readyState === EventSource.CLOSED) {
-          dispatch({
-            type: "RECONNECT_FAILED",
-            message: "SSE connection closed",
-          });
-        } else if (eventSource.readyState === EventSource.CONNECTING) {
-          if (hasConnectedOnce) {
-            dispatch({ type: "SSE_DISCONNECT" });
-          }
-        }
-      });
     },
 
     disconnectSSE() {

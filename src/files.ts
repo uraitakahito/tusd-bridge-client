@@ -23,11 +23,6 @@ function dispatch(event: FilesEvent): FilesTransitionResult {
   }
   state = result.state;
   ui.render(state);
-
-  if (event.type === "FILES_LOADED") {
-    client.connectSSE(event.lastEventId);
-  }
-
   return result;
 }
 
