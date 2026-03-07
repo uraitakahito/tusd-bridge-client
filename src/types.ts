@@ -12,6 +12,7 @@ export interface UploadParams {
 export interface FileInfo {
   upload_id: string;
   display_status: string;
+  download_url: string;
   file_size: number | null;
   file_offset: number | null;
   filename: string | null;

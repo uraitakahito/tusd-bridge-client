@@ -30,11 +30,13 @@ export function createFilesUI(
   const thead = document.createElement("thead");
   const headerRow = document.createElement("tr");
   const columns = [
+    "files.column.id",
     "files.column.filename",
     "files.column.size",
     "files.column.status",
     "files.column.progress",
     "files.column.updatedAt",
+    "files.column.download",
   ];
   for (const col of columns) {
     const th = document.createElement("th");
@@ -76,6 +78,11 @@ export function createFilesUI(
   function renderFileRow(file: FileInfo): HTMLTableRowElement {
     const row = document.createElement("tr");
 
+    const idCell = document.createElement("td");
+    idCell.textContent = file.upload_id;
+    idCell.className = "file-id";
+    row.appendChild(idCell);
+
     const nameCell = document.createElement("td");
     nameCell.textContent = file.filename ?? noFilename;
     row.appendChild(nameCell);
@@ -104,6 +111,14 @@ export function createFilesUI(
     const dateCell = document.createElement("td");
     dateCell.textContent = file.updated_at.replace("T", " ").slice(0, 19);
     row.appendChild(dateCell);
+
+    const downloadCell = document.createElement("td");
+    const downloadLink = document.createElement("a");
+    downloadLink.href = file.download_url;
+    downloadLink.textContent = intl.formatMessage({ id: "files.downloadLink" });
+    downloadLink.download = "";
+    downloadCell.appendChild(downloadLink);
+    row.appendChild(downloadCell);
 
     return row;
   }
