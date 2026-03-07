@@ -2,6 +2,17 @@ import type { IntlShape } from "@formatjs/intl";
 import type { FilesState } from "./files-state";
 import type { FileInfo } from "./types";
 
+interface FilesViewProps {
+  loadingVisible: boolean;
+  connectionBadge: {
+    hidden: boolean;
+    kind: "connected" | "reconnecting" | "disconnected";
+  };
+  files: FileInfo[] | null;
+  error: { hidden: boolean; message: string };
+  retryHidden: boolean;
+}
+
 export interface FilesUI {
   retryButton: HTMLButtonElement;
   render(state: FilesState): void;
@@ -72,6 +83,46 @@ export function createFilesUI(
   root.appendChild(emptyMessage);
   root.appendChild(errorMessage);
   root.appendChild(retryButton);
+
+  function deriveViewProps(state: FilesState): FilesViewProps {
+    switch (state.kind) {
+      case "loading":
+        return {
+          loadingVisible: true,
+          connectionBadge: { hidden: true, kind: "disconnected" },
+          files: [],
+          error: { hidden: true, message: "" },
+          retryHidden: true,
+        };
+      case "connected":
+        return {
+          loadingVisible: false,
+          connectionBadge: { hidden: false, kind: "connected" },
+          files: state.files,
+          error: { hidden: true, message: "" },
+          retryHidden: true,
+        };
+      case "reconnecting":
+        return {
+          loadingVisible: false,
+          connectionBadge: { hidden: false, kind: "reconnecting" },
+          files: null,
+          error: { hidden: true, message: "" },
+          retryHidden: true,
+        };
+      case "error":
+        return {
+          loadingVisible: false,
+          connectionBadge: { hidden: false, kind: "disconnected" },
+          files: state.files,
+          error: {
+            hidden: false,
+            message: intl.formatMessage({ id: "files.error" }, { message: state.message }),
+          },
+          retryHidden: false,
+        };
+    }
+  }
 
   const noFilename = intl.formatMessage({ id: "files.noFilename" });
 
@@ -147,52 +198,25 @@ export function createFilesUI(
     }
   }
 
+  function applyViewProps(props: FilesViewProps): void {
+    loadingIndicator.hidden = !props.loadingVisible;
+    connectionStatus.hidden = props.connectionBadge.hidden;
+    if (!props.connectionBadge.hidden) {
+      setConnectionBadge(props.connectionBadge.kind);
+    }
+    if (props.files != null) {
+      renderFiles(props.files);
+    }
+    errorMessage.textContent = props.error.message;
+    errorMessage.hidden = props.error.hidden;
+    retryButton.hidden = props.retryHidden;
+  }
+
   return {
     retryButton,
 
     render(state: FilesState) {
-      switch (state.kind) {
-        case "loading":
-          loadingIndicator.hidden = false;
-          table.hidden = true;
-          emptyMessage.hidden = true;
-          connectionStatus.hidden = true;
-          errorMessage.hidden = true;
-          retryButton.hidden = true;
-          break;
-
-        case "connected":
-          loadingIndicator.hidden = true;
-          connectionStatus.hidden = false;
-          setConnectionBadge("connected");
-          renderFiles(state.files);
-          errorMessage.hidden = true;
-          retryButton.hidden = true;
-          break;
-
-        case "reconnecting":
-          loadingIndicator.hidden = true;
-          connectionStatus.hidden = false;
-          setConnectionBadge("reconnecting");
-          errorMessage.hidden = true;
-          retryButton.hidden = true;
-          break;
-
-        case "error":
-          loadingIndicator.hidden = true;
-          connectionStatus.hidden = false;
-          setConnectionBadge("disconnected");
-          if (state.files.length > 0) {
-            renderFiles(state.files);
-          }
-          errorMessage.textContent = intl.formatMessage(
-            { id: "files.error" },
-            { message: state.message },
-          );
-          errorMessage.hidden = false;
-          retryButton.hidden = false;
-          break;
-      }
+      applyViewProps(deriveViewProps(state));
     },
   };
 }
