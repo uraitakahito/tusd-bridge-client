@@ -11,7 +11,7 @@
 
 ```console
 % npm run build
-% docker run -d --init --rm -p 80:80 --mount type=bind,src=`pwd`,dst=/usr/share/nginx/html --name nginx-container nginx
+% docker run -d --init --rm -p 80:80 --mount type=bind,src=`pwd`,dst=/usr/share/nginx/html --mount type=bind,src=`pwd`/nginx.conf,dst=/etc/nginx/conf.d/default.conf --name nginx-container nginx
 ```
 
 ## tusd並びにtusd-bridgeの起動
