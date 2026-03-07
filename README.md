@@ -1,11 +1,9 @@
 # tusd-bridge-client
 
-[tusd-bridge](https://github.com/uraitakahito/tusd-bridge) と連携するフロントエンドWebアプリケーション。
+[tusd](https://tus.github.io/tusd/)や[tusd-bridge](https://github.com/uraitakahito/tusd-bridge) と連携するフロントエンドWebアプリケーション。
 
-## 連携先
-
-- **tusd**: TUSプロトコル対応のファイルアップロードサーバー
-- **tusd-bridge**: tusdのgRPCフックを受け取り、アップロードイベントを永続化するブリッジサーバー
+- **tusd**: [TUSプロトコル](https://tus.io/)対応のファイルアップロードサーバー
+- **tusd-bridge**: tusdのgRPCフックを受け取り、アップロードイベントを永続化したら通知したりするブリッジサーバー
 
 ## 開発環境のセットアップ (Docker)
 
