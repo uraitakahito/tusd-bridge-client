@@ -1,15 +1,6 @@
 # tusd-bridge-client
 
 [tusd-bridge](https://github.com/uraitakahito/tusd-bridge) と連携するフロントエンドWebアプリケーション。
-[tus-js-client](https://github.com/tus/tus-js-client) を使用した resumable upload クライアント。
-
-## 技術スタック
-
-- TypeScript
-- Rollup (バンドラー)
-- ESLint (リンター)
-- tus-js-client (TUSプロトコルクライアント)
-- @formatjs/intl (国際化)
 
 ## 開発環境のセットアップ (Docker)
 
