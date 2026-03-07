@@ -21,13 +21,13 @@ export type TransitionResult<S extends StateBase, E extends EventBase> =
   | { ok: true; state: S }
   | { ok: false; state: S; from: S["kind"]; eventType: E["type"] };
 
-export function accepted<S extends StateBase, E extends EventBase>(
+function accepted<S extends StateBase, E extends EventBase>(
   state: S,
 ): TransitionResult<S, E> {
   return { ok: true, state };
 }
 
-export function rejected<S extends StateBase, E extends EventBase>(
+function rejected<S extends StateBase, E extends EventBase>(
   state: S,
   event: E,
 ): TransitionResult<S, E> {
@@ -36,6 +36,39 @@ export function rejected<S extends StateBase, E extends EventBase>(
 
 export type TransitionFn<S extends StateBase, E extends EventBase> =
   (state: S, event: E) => TransitionResult<S, E>;
+
+/**
+ * 遷移テーブルの型。
+ *
+ * `[状態のkind][イベントのtype]` に対応するハンドラ関数を格納する。
+ * テーブルにエントリがない組み合わせは自動的に rejected（遷移拒否）となる。
+ */
+export type TransitionTable<S extends StateBase, E extends EventBase> = {
+  [K in S["kind"]]?: {
+    [T in E["type"]]?: (
+      state: Extract<S, { kind: K }>,
+      event: Extract<E, { type: T }>,
+    ) => S;
+  };
+};
+
+/**
+ * 遷移テーブルから TransitionFn を生成する。
+ *
+ * テーブルに該当ハンドラがあれば accepted、なければ rejected を返す。
+ */
+export function createTransition<S extends StateBase, E extends EventBase>(
+  table: TransitionTable<S, E>,
+): TransitionFn<S, E> {
+  return (state: S, event: E): TransitionResult<S, E> => {
+    const handlers = table[state.kind as S["kind"]];
+    const handler = handlers?.[event.type as E["type"]] as
+      | ((s: S, e: E) => S)
+      | undefined;
+    if (!handler) return rejected(state, event);
+    return accepted(handler(state, event));
+  };
+}
 
 export function createDispatch<S extends StateBase, E extends EventBase>(
   initialState: S,

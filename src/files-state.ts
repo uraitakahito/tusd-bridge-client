@@ -16,7 +16,8 @@
  * @module
  */
 
-import { type TransitionResult, accepted, rejected } from "./fsm";
+import type { TransitionTable } from "./fsm";
+import { createTransition } from "./fsm";
 import type { FileInfo } from "./types";
 
 export type FilesState =
@@ -44,51 +45,36 @@ function upsertFile(files: FileInfo[], file: FileInfo): FileInfo[] {
   return [file, ...files];
 }
 
-export function transition(
-  state: FilesState,
-  event: FilesEvent,
-): TransitionResult<FilesState, FilesEvent> {
-  switch (event.type) {
-    case "FILES_LOADED":
-      if (state.kind !== "loading") return rejected(state, event);
-      return accepted({
-        kind: "connected",
-        files: event.files,
-        lastEventId: event.lastEventId,
-      });
-    case "LOAD_ERROR":
-      if (state.kind !== "loading") return rejected(state, event);
-      return accepted({ kind: "error", message: event.message, files: [] });
-    case "FILE_EVENT":
-      if (state.kind !== "connected") return rejected(state, event);
-      return accepted({
-        kind: "connected",
-        files: upsertFile(state.files, event.file),
-        lastEventId: event.eventId,
-      });
-    case "SSE_DISCONNECT":
-      if (state.kind !== "connected") return rejected(state, event);
-      return accepted({
-        kind: "reconnecting",
-        files: state.files,
-        lastEventId: state.lastEventId,
-      });
-    case "SSE_RECONNECT":
-      if (state.kind !== "reconnecting") return rejected(state, event);
-      return accepted({
-        kind: "connected",
-        files: state.files,
-        lastEventId: state.lastEventId,
-      });
-    case "RECONNECT_FAILED":
-      if (state.kind !== "reconnecting") return rejected(state, event);
-      return accepted({
-        kind: "error",
-        message: event.message,
-        files: state.files,
-      });
-    case "RETRY":
-      if (state.kind !== "error") return rejected(state, event);
-      return accepted({ kind: "loading" });
-  }
-}
+const table: TransitionTable<FilesState, FilesEvent> = {
+  loading: {
+    FILES_LOADED: (_s, e) => ({
+      kind: "connected", files: e.files, lastEventId: e.lastEventId,
+    }),
+    LOAD_ERROR: (_s, e) => ({
+      kind: "error", message: e.message, files: [],
+    }),
+  },
+  connected: {
+    FILE_EVENT: (s, e) => ({
+      kind: "connected",
+      files: upsertFile(s.files, e.file),
+      lastEventId: e.eventId,
+    }),
+    SSE_DISCONNECT: (s) => ({
+      kind: "reconnecting", files: s.files, lastEventId: s.lastEventId,
+    }),
+  },
+  reconnecting: {
+    SSE_RECONNECT: (s) => ({
+      kind: "connected", files: s.files, lastEventId: s.lastEventId,
+    }),
+    RECONNECT_FAILED: (s, e) => ({
+      kind: "error", message: e.message, files: s.files,
+    }),
+  },
+  error: {
+    RETRY: () => ({ kind: "loading" }),
+  },
+};
+
+export const transition = createTransition(table);
