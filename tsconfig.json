@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "outDir": "dist",
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    // tus-js-client の型定義が Node.js の Buffer 型を参照しているが、
+    // 本プロジェクトはブラウザアプリであり @types/node の導入は不適切なため、
+    // ライブラリの .d.ts ファイルの型チェックを省略する。
+    //
+    // この型エラーが存在すると @rollup/plugin-typescript がサイレントに
+    // ビルド失敗する（詳細は rollup.config.js のコメントを参照）。
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}

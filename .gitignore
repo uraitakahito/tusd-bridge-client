@@ -1,7 +1,9 @@
 .DS_Store
 .Trash-*
 coverage
-node_modules
+node_modules/
+dist/
+docs/api/
 
 # Docker
 docker-entrypoint.sh

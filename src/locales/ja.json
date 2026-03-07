@@ -1,0 +1,22 @@
+{
+  "label.endpoint": "エンドポイント: ",
+  "label.token": "トークン: ",
+  "label.chunkSize": "チャンクサイズ (バイト): ",
+  "placeholder.chunkSize": "無制限",
+  "button.upload": "アップロード",
+  "button.pause": "一時停止",
+  "button.resume": "再開",
+  "button.cancel": "中止",
+  "button.manualRetry": "今すぐ再試行",
+  "status.uploadingNoProgress": "アップロード中...",
+  "status.uploading": "アップロード中: {pct}% ({uploaded, number}/{total, number} バイト)",
+  "status.pausedNoProgress": "一時停止中",
+  "status.paused": "一時停止中: {pct}% ({uploaded, number}/{total, number} バイト)",
+  "status.complete": "アップロード完了: {url}",
+  "retry.reason": "サーバーに接続できません ({reason})",
+  "retry.count": "リトライ {attempt, number}/{max, number} — {delaySec, number}秒後に再試行",
+  "retry.failed": "アップロード失敗: {message}",
+  "retry.allFailed": "全てのリトライが失敗しました",
+  "error.networkError": "ネットワークエラー",
+  "error.httpStatus": "HTTP {statusCode, number}"
+}
