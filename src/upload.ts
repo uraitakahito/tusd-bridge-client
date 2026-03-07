@@ -29,6 +29,12 @@ const uploader = createUploader(dispatch, (statusCode) =>
     : intl.formatMessage({ id: "error.networkError" }),
 );
 
+ui.fileInput.addEventListener("click", () => {
+  if (state.kind === "success" || state.kind === "error") {
+    dispatch({ type: "RESET" });
+  }
+});
+
 ui.fileInput.addEventListener("change", () => {
   if (state.kind === "uploading" || state.kind === "retrying") {
     uploader.abortUpload();
@@ -43,7 +49,9 @@ ui.uploadButton.addEventListener("click", () => {
 
   const chunkSize = Number(ui.chunkSizeInput.value) || Infinity;
 
-  const result = dispatch({ type: "START" });
+  const eventType = state.kind === "success" || state.kind === "error"
+    ? "RESTART" : "START";
+  const result = dispatch({ type: eventType });
   if (!result.ok) return;
   uploader.startUpload({
     file,
