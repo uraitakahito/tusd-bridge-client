@@ -1,0 +1,15 @@
+{
+  "files.title": "ファイル一覧",
+  "files.column.filename": "ファイル名",
+  "files.column.size": "サイズ",
+  "files.column.status": "状態",
+  "files.column.updatedAt": "更新日時",
+  "files.loading": "読み込み中...",
+  "files.empty": "ファイルがありません",
+  "files.connection.connected": "接続中",
+  "files.connection.reconnecting": "再接続中...",
+  "files.connection.disconnected": "切断",
+  "files.error": "読み込み失敗: {message}",
+  "files.retry": "再試行",
+  "files.noFilename": "(名前なし)"
+}

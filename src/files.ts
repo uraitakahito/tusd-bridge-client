@@ -3,8 +3,10 @@ import { transition } from "./files-state";
 import { createFilesUI } from "./files-ui";
 import { createFilesClient } from "./files-client";
 import { setupIntl } from "./i18n";
+import filesEn from "./locales/files.en.json";
+import filesJa from "./locales/files.ja.json";
 
-const intl = setupIntl();
+const intl = setupIntl({ en: filesEn, ja: filesJa });
 
 const root = document.getElementById("app")!;
 const ui = createFilesUI(root, intl);

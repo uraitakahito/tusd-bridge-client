@@ -3,8 +3,10 @@ import { transition } from "./upload-state";
 import { createUI } from "./upload-ui";
 import { createUploader } from "./upload-client";
 import { setupIntl } from "./i18n";
+import uploadEn from "./locales/upload.en.json";
+import uploadJa from "./locales/upload.ja.json";
 
-const intl = setupIntl();
+const intl = setupIntl({ en: uploadEn, ja: uploadJa });
 
 const root = document.getElementById("app")!;
 const ui = createUI(root, intl);

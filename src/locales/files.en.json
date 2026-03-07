@@ -1,0 +1,15 @@
+{
+  "files.title": "File List",
+  "files.column.filename": "Filename",
+  "files.column.size": "Size",
+  "files.column.status": "Status",
+  "files.column.updatedAt": "Updated",
+  "files.loading": "Loading...",
+  "files.empty": "No files",
+  "files.connection.connected": "Connected",
+  "files.connection.reconnecting": "Reconnecting...",
+  "files.connection.disconnected": "Disconnected",
+  "files.error": "Failed to load: {message}",
+  "files.retry": "Retry",
+  "files.noFilename": "(no name)"
+}
