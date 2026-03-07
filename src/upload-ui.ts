@@ -130,6 +130,179 @@ export function createUI(root: HTMLElement, intl: IntlShape<string>): UI {
   root.appendChild(status);
   root.appendChild(retryPanel);
 
+  interface ViewProps {
+    inputsDisabled: boolean;
+    uploadButtonDisabled: boolean;
+    pauseButton: { hidden: boolean; text: string };
+    cancelHidden: boolean;
+    retryPanel: {
+      hidden: boolean;
+      message: string;
+      countLabel: string;
+      manualRetryButton: { hidden: boolean; disabled: boolean };
+    };
+    progress: {
+      visible: boolean;
+      width: string;
+      modifier: "retrying" | "paused" | null;
+    };
+    statusText: string;
+  }
+
+  function formatProgress(
+    bytesUploaded: number,
+    bytesTotal: number,
+    msgId: string,
+    noProgressMsgId: string,
+  ): { width: string; statusText: string } {
+    if (bytesTotal > 0) {
+      const pct = ((bytesUploaded / bytesTotal) * 100).toFixed(1);
+      return {
+        width: `${pct}%`,
+        statusText: intl.formatMessage(
+          { id: msgId },
+          { pct, uploaded: bytesUploaded, total: bytesTotal },
+        ),
+      };
+    }
+    return { width: "0%", statusText: intl.formatMessage({ id: noProgressMsgId }) };
+  }
+
+  function deriveViewProps(state: UploadState, fileSelected: boolean): ViewProps {
+    switch (state.kind) {
+      case "idle":
+        return {
+          inputsDisabled: false,
+          uploadButtonDisabled: !fileSelected,
+          pauseButton: { hidden: true, text: intl.formatMessage({ id: "button.pause" }) },
+          cancelHidden: true,
+          retryPanel: {
+            hidden: true, message: "", countLabel: "",
+            manualRetryButton: { hidden: true, disabled: true },
+          },
+          progress: { visible: false, width: "0%", modifier: null },
+          statusText: "",
+        };
+      case "uploading": {
+        const { width, statusText } = formatProgress(
+          state.bytesUploaded, state.bytesTotal,
+          "status.uploading", "status.uploadingNoProgress",
+        );
+        return {
+          inputsDisabled: true,
+          uploadButtonDisabled: true,
+          pauseButton: { hidden: false, text: intl.formatMessage({ id: "button.pause" }) },
+          cancelHidden: false,
+          retryPanel: {
+            hidden: true, message: "", countLabel: "",
+            manualRetryButton: { hidden: true, disabled: true },
+          },
+          progress: { visible: true, width, modifier: null },
+          statusText,
+        };
+      }
+      case "retrying": {
+        const { width } = formatProgress(
+          state.bytesUploaded, state.bytesTotal,
+          "status.uploading", "status.uploadingNoProgress",
+        );
+        return {
+          inputsDisabled: true,
+          uploadButtonDisabled: true,
+          pauseButton: { hidden: false, text: intl.formatMessage({ id: "button.pause" }) },
+          cancelHidden: false,
+          retryPanel: {
+            hidden: false,
+            message: intl.formatMessage({ id: "retry.reason" }, { reason: state.reason }),
+            countLabel: intl.formatMessage(
+              { id: "retry.count" },
+              { attempt: state.attempt + 1, max: state.maxRetries, delaySec: state.delay / 1000 },
+            ),
+            manualRetryButton: { hidden: true, disabled: true },
+          },
+          progress: { visible: true, width, modifier: "retrying" },
+          statusText: "",
+        };
+      }
+      case "paused": {
+        const { width, statusText } = formatProgress(
+          state.bytesUploaded, state.bytesTotal,
+          "status.paused", "status.pausedNoProgress",
+        );
+        return {
+          inputsDisabled: true,
+          uploadButtonDisabled: true,
+          pauseButton: { hidden: false, text: intl.formatMessage({ id: "button.resume" }) },
+          cancelHidden: false,
+          retryPanel: {
+            hidden: true, message: "", countLabel: "",
+            manualRetryButton: { hidden: true, disabled: true },
+          },
+          progress: { visible: true, width, modifier: "paused" },
+          statusText,
+        };
+      }
+      case "error": {
+        const { width } = formatProgress(
+          state.bytesUploaded, state.bytesTotal,
+          "status.uploading", "status.uploadingNoProgress",
+        );
+        return {
+          inputsDisabled: false,
+          uploadButtonDisabled: !fileSelected,
+          pauseButton: { hidden: true, text: intl.formatMessage({ id: "button.pause" }) },
+          cancelHidden: true,
+          retryPanel: {
+            hidden: false,
+            message: intl.formatMessage({ id: "retry.failed" }, { message: state.message }),
+            countLabel: intl.formatMessage({ id: "retry.allFailed" }),
+            manualRetryButton: { hidden: false, disabled: false },
+          },
+          progress: { visible: true, width, modifier: null },
+          statusText: "",
+        };
+      }
+      case "success":
+        return {
+          inputsDisabled: false,
+          uploadButtonDisabled: !fileSelected,
+          pauseButton: { hidden: true, text: intl.formatMessage({ id: "button.pause" }) },
+          cancelHidden: true,
+          retryPanel: {
+            hidden: true, message: "", countLabel: "",
+            manualRetryButton: { hidden: true, disabled: true },
+          },
+          progress: { visible: true, width: "100%", modifier: null },
+          statusText: intl.formatMessage({ id: "status.complete" }, { url: state.url }),
+        };
+    }
+  }
+
+  function applyViewProps(props: ViewProps): void {
+    endpointInput.disabled = props.inputsDisabled;
+    tokenInput.disabled = props.inputsDisabled;
+    chunkSizeInput.disabled = props.inputsDisabled;
+    fileInput.disabled = props.inputsDisabled;
+    uploadButton.disabled = props.uploadButtonDisabled;
+
+    pauseButton.hidden = props.pauseButton.hidden;
+    pauseButton.textContent = props.pauseButton.text;
+    cancelButton.hidden = props.cancelHidden;
+
+    retryPanel.hidden = props.retryPanel.hidden;
+    retryMessage.textContent = props.retryPanel.message;
+    retryCountLabel.textContent = props.retryPanel.countLabel;
+    manualRetryButton.hidden = props.retryPanel.manualRetryButton.hidden;
+    manualRetryButton.disabled = props.retryPanel.manualRetryButton.disabled;
+
+    progressContainer.classList.toggle("visible", props.progress.visible);
+    progressBar.style.width = props.progress.width;
+    progressBar.classList.toggle("retrying", props.progress.modifier === "retrying");
+    progressBar.classList.toggle("paused", props.progress.modifier === "paused");
+
+    status.textContent = props.statusText;
+  }
+
   return {
     endpointInput,
     tokenInput,
@@ -141,150 +314,8 @@ export function createUI(root: HTMLElement, intl: IntlShape<string>): UI {
     manualRetryButton,
 
     render(state: UploadState) {
-      switch (state.kind) {
-        case "idle":
-          endpointInput.disabled = false;
-          tokenInput.disabled = false;
-          chunkSizeInput.disabled = false;
-          fileInput.disabled = false;
-          retryPanel.hidden = true;
-          manualRetryButton.hidden = true;
-          manualRetryButton.disabled = true;
-          pauseButton.hidden = true;
-          cancelButton.hidden = true;
-          progressBar.classList.remove("retrying");
-          progressBar.classList.remove("paused");
-          progressContainer.classList.remove("visible");
-          progressBar.style.width = "0%";
-          status.textContent = "";
-          uploadButton.disabled = !fileInput.files?.length;
-          break;
-
-        case "uploading": {
-          endpointInput.disabled = true;
-          tokenInput.disabled = true;
-          chunkSizeInput.disabled = true;
-          fileInput.disabled = true;
-          retryPanel.hidden = true;
-          manualRetryButton.hidden = true;
-          manualRetryButton.disabled = true;
-          pauseButton.hidden = false;
-          pauseButton.textContent = intl.formatMessage({ id: "button.pause" });
-          cancelButton.hidden = false;
-          progressBar.classList.remove("retrying");
-          progressBar.classList.remove("paused");
-          progressContainer.classList.add("visible");
-          uploadButton.disabled = true;
-          if (state.bytesTotal > 0) {
-            const percentage = (
-              (state.bytesUploaded / state.bytesTotal) *
-              100
-            ).toFixed(1);
-            progressBar.style.width = `${percentage}%`;
-            status.textContent = intl.formatMessage(
-              { id: "status.uploading" },
-              { pct: percentage, uploaded: state.bytesUploaded, total: state.bytesTotal },
-            );
-          } else {
-            progressBar.style.width = "0%";
-            status.textContent = intl.formatMessage({ id: "status.uploadingNoProgress" });
-          }
-          break;
-        }
-
-        case "retrying":
-          endpointInput.disabled = true;
-          tokenInput.disabled = true;
-          chunkSizeInput.disabled = true;
-          fileInput.disabled = true;
-          retryPanel.hidden = false;
-          manualRetryButton.hidden = true;
-          manualRetryButton.disabled = true;
-          pauseButton.hidden = false;
-          pauseButton.textContent = intl.formatMessage({ id: "button.pause" });
-          cancelButton.hidden = false;
-          retryMessage.textContent = intl.formatMessage(
-            { id: "retry.reason" },
-            { reason: state.reason },
-          );
-          retryCountLabel.textContent = intl.formatMessage(
-            { id: "retry.count" },
-            { attempt: state.attempt + 1, max: state.maxRetries, delaySec: state.delay / 1000 },
-          );
-          progressBar.classList.add("retrying");
-          uploadButton.disabled = true;
-          break;
-
-        case "paused": {
-          endpointInput.disabled = true;
-          tokenInput.disabled = true;
-          chunkSizeInput.disabled = true;
-          fileInput.disabled = true;
-          retryPanel.hidden = true;
-          manualRetryButton.hidden = true;
-          manualRetryButton.disabled = true;
-          pauseButton.hidden = false;
-          pauseButton.textContent = intl.formatMessage({ id: "button.resume" });
-          cancelButton.hidden = false;
-          progressBar.classList.remove("retrying");
-          progressBar.classList.add("paused");
-          progressContainer.classList.add("visible");
-          uploadButton.disabled = true;
-          if (state.bytesTotal > 0) {
-            const percentage = (
-              (state.bytesUploaded / state.bytesTotal) *
-              100
-            ).toFixed(1);
-            progressBar.style.width = `${percentage}%`;
-            status.textContent = intl.formatMessage(
-              { id: "status.paused" },
-              { pct: percentage, uploaded: state.bytesUploaded, total: state.bytesTotal },
-            );
-          } else {
-            status.textContent = intl.formatMessage({ id: "status.pausedNoProgress" });
-          }
-          break;
-        }
-
-        case "error":
-          endpointInput.disabled = false;
-          tokenInput.disabled = false;
-          chunkSizeInput.disabled = false;
-          fileInput.disabled = false;
-          cancelButton.hidden = true;
-          retryPanel.hidden = false;
-          retryMessage.textContent = intl.formatMessage(
-            { id: "retry.failed" },
-            { message: state.message },
-          );
-          retryCountLabel.textContent = intl.formatMessage({ id: "retry.allFailed" });
-          manualRetryButton.hidden = false;
-          manualRetryButton.disabled = false;
-          pauseButton.hidden = true;
-          progressBar.classList.remove("retrying");
-          progressBar.classList.remove("paused");
-          uploadButton.disabled = !fileInput.files?.length;
-          break;
-
-        case "success":
-          endpointInput.disabled = false;
-          tokenInput.disabled = false;
-          chunkSizeInput.disabled = false;
-          fileInput.disabled = false;
-          retryPanel.hidden = true;
-          manualRetryButton.hidden = true;
-          manualRetryButton.disabled = true;
-          pauseButton.hidden = true;
-          cancelButton.hidden = true;
-          progressBar.classList.remove("retrying");
-          progressBar.classList.remove("paused");
-          status.textContent = intl.formatMessage(
-            { id: "status.complete" },
-            { url: state.url },
-          );
-          uploadButton.disabled = !fileInput.files?.length;
-          break;
-      }
+      const props = deriveViewProps(state, !!fileInput.files?.length);
+      applyViewProps(props);
     },
   };
 }

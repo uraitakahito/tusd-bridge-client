@@ -38,9 +38,11 @@ export type UploadState =
       maxRetries: number;
       delay: number;
       reason: string;
+      bytesUploaded: number;
+      bytesTotal: number;
     }
   | { kind: "paused"; bytesUploaded: number; bytesTotal: number }
-  | { kind: "error"; message: string }
+  | { kind: "error"; message: string; bytesUploaded: number; bytesTotal: number }
   | { kind: "success"; url: string };
 
 export type UploadEvent =
@@ -97,13 +99,20 @@ export function transition(
         maxRetries: event.maxRetries,
         delay: event.delay,
         reason: event.reason,
+        bytesUploaded: state.bytesUploaded,
+        bytesTotal: state.bytesTotal,
       });
     case "SUCCESS":
       if (state.kind !== "uploading") return rejected(state, event);
       return accepted({ kind: "success", url: event.url });
     case "ERROR":
       if (state.kind !== "uploading" && state.kind !== "retrying") return rejected(state, event);
-      return accepted({ kind: "error", message: event.message });
+      return accepted({
+        kind: "error",
+        message: event.message,
+        bytesUploaded: state.bytesUploaded,
+        bytesTotal: state.bytesTotal,
+      });
     case "MANUAL_RETRY":
       if (state.kind !== "error") return rejected(state, event);
       return accepted({ kind: "uploading", bytesUploaded: 0, bytesTotal: 0 });
@@ -114,7 +123,7 @@ export function transition(
       if (state.kind === "uploading")
         return accepted({ kind: "paused", bytesUploaded: state.bytesUploaded, bytesTotal: state.bytesTotal });
       if (state.kind === "retrying")
-        return accepted({ kind: "paused", bytesUploaded: 0, bytesTotal: 0 });
+        return accepted({ kind: "paused", bytesUploaded: state.bytesUploaded, bytesTotal: state.bytesTotal });
       return rejected(state, event);
     case "RESUME":
       if (state.kind !== "paused") return rejected(state, event);
