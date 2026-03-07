@@ -3,7 +3,7 @@ import type { UploadEventHandler, UploadParams } from "./types";
 
 export interface Uploader {
   startUpload(params: UploadParams): void;
-  abortUpload(): void;
+  abortUpload(shouldTerminate?: boolean): void;
   retryUpload(): void;
 }
 
@@ -58,9 +58,9 @@ export function createUploader(
       currentUpload.start();
     },
 
-    abortUpload() {
+    abortUpload(shouldTerminate?: boolean) {
       if (!currentUpload) return;
-      void currentUpload.abort();
+      void currentUpload.abort(shouldTerminate);
     },
 
     retryUpload() {

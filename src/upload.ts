@@ -3,11 +3,15 @@ import { transition } from "./upload-state";
 import { createUI } from "./upload-ui";
 import { createUploader } from "./upload-client";
 import { setupIntl } from "./i18n";
+import uploadEn from "./locales/upload.en.json";
+import uploadJa from "./locales/upload.ja.json";
+import { config } from "./config";
 
-const intl = setupIntl();
+const intl = setupIntl({ en: uploadEn, ja: uploadJa });
 
 const root = document.getElementById("app")!;
 const ui = createUI(root, intl);
+ui.endpointInput.value = config.tusEndpoint;
 
 let state: UploadState = { kind: "idle" };
 
@@ -74,10 +78,10 @@ ui.pauseButton.addEventListener("click", () => {
 });
 
 ui.cancelButton.addEventListener("click", () => {
-  if (state.kind === "uploading" || state.kind === "retrying") {
-    uploader.abortUpload();
+  const result = dispatch({ type: "CANCEL" });
+  if (result.ok) {
+    uploader.abortUpload(true);
   }
-  dispatch({ type: "CANCEL" });
 });
 
 ui.manualRetryButton.addEventListener("click", () => {

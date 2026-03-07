@@ -3,8 +3,11 @@ import { transition } from "./files-state";
 import { createFilesUI } from "./files-ui";
 import { createFilesClient } from "./files-client";
 import { setupIntl } from "./i18n";
+import filesEn from "./locales/files.en.json";
+import filesJa from "./locales/files.ja.json";
+import { config } from "./config";
 
-const intl = setupIntl();
+const intl = setupIntl({ en: filesEn, ja: filesJa });
 
 const root = document.getElementById("app")!;
 const ui = createFilesUI(root, intl);
@@ -28,13 +31,7 @@ function dispatch(event: FilesEvent): FilesTransitionResult {
   return result;
 }
 
-// nginx のリバースプロキシ経由で tusd-bridge API にアクセスする。
-// /api/ → host.docker.internal:8001/ にプロキシされるため、
-// 同一オリジンとなり CORS の問題が発生しない。
-const client = createFilesClient(
-  "/api",
-  dispatch,
-);
+const client = createFilesClient(config.filesApiBaseUrl, dispatch);
 
 ui.retryButton.addEventListener("click", () => {
   const result = dispatch({ type: "RETRY" });

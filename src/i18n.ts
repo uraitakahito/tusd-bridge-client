@@ -1,18 +1,13 @@
 import { createIntl, createIntlCache } from "@formatjs/intl";
 import type { IntlShape } from "@formatjs/intl";
-import enMessages from "./locales/en.json";
-import jaMessages from "./locales/ja.json";
 
 export type { IntlShape };
 
-const messages: Record<string, Record<string, string>> = {
-  en: enMessages,
-  ja: jaMessages,
-};
+type LocaleMessages = Record<string, Record<string, string>>;
 
 const defaultLocale = "en";
 
-function resolveLocale(): string {
+function resolveLocale(messages: LocaleMessages): string {
   const param = new URLSearchParams(location.search).get("lang");
   if (param && param in messages) return param;
 
@@ -22,8 +17,8 @@ function resolveLocale(): string {
   return defaultLocale;
 }
 
-export function setupIntl(): IntlShape<string> {
-  const locale = resolveLocale();
+export function setupIntl(messages: LocaleMessages): IntlShape<string> {
+  const locale = resolveLocale(messages);
   const cache = createIntlCache();
   return createIntl({ locale, messages: messages[locale] }, cache);
 }
