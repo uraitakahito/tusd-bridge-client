@@ -1,0 +1,58 @@
+// Settings file locations
+// Depending on your platform, the user settings file is located here:
+//   Windows %APPDATA%\Code\User\settings.json
+//   macOS $HOME/Library/Application\ Support/Code/User/settings.json
+//   Linux $HOME/.config/Code/User/settings.json
+{
+  //
+  // Basic Editing
+  //
+  // https://code.visualstudio.com/docs/editor/codebasics#_how-do-i-turn-on-word-wrap
+  "editor.wordWrap": "on",
+
+  //
+  // JSON/JSONC
+  //
+  "[json]": {
+    "editor.formatOnSave": false
+  },
+  "[jsonc]": {
+    "editor.formatOnSave": false
+  },
+
+  // To actually start using the workspace version for IntelliSense,
+  // you **MUST RUN** the TypeScript: Select TypeScript Version command
+  // and select the workspace version.
+  // https://code.visualstudio.com/docs/typescript/typescript-compiling#_using-newer-typescript-versions
+  "js/ts.tsdk.path": "./node_modules/typescript/lib",
+
+  // https://code.visualstudio.com/docs/typescript/typescript-editing
+  "js/ts.implementationsCodeLens.enabled": true,
+  "js/ts.referencesCodeLens.enabled": true,
+  "js/ts.suggest.autoImports": true,
+
+  //
+  // ESLint
+  //
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  // https://stackoverflow.com/a/71884347
+  "eslint.format.enable": true,
+
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.formatOnSave": true
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.formatOnSave": true
+  }
+}

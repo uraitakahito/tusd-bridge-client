@@ -1,0 +1,10 @@
+{
+  "entryPoints": ["src"],
+  "entryPointStrategy": "expand",
+  "out": "docs/api",
+  "plugin": ["typedoc-plugin-mermaid"],
+  "tsconfig": "tsconfig.json",
+  "name": "tusd-bridge-client",
+  "excludePrivate": true,
+  "mermaidVersion": "11"
+}

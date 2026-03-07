@@ -1,0 +1,22 @@
+{
+  "label.endpoint": "Endpoint: ",
+  "label.token": "Token: ",
+  "label.chunkSize": "Chunk size (bytes): ",
+  "placeholder.chunkSize": "Infinity",
+  "button.upload": "Upload",
+  "button.pause": "Pause",
+  "button.resume": "Resume",
+  "button.cancel": "Cancel",
+  "button.manualRetry": "Retry now",
+  "status.uploadingNoProgress": "Uploading...",
+  "status.uploading": "Uploading: {pct}% ({uploaded, number}/{total, number} bytes)",
+  "status.pausedNoProgress": "Paused",
+  "status.paused": "Paused: {pct}% ({uploaded, number}/{total, number} bytes)",
+  "status.complete": "Upload complete! {url}",
+  "retry.reason": "Cannot connect to server ({reason})",
+  "retry.count": "Retry {attempt, number}/{max, number} — retrying in {delaySec, number}s",
+  "retry.failed": "Upload failed: {message}",
+  "retry.allFailed": "All retries have been exhausted",
+  "error.networkError": "Network error",
+  "error.httpStatus": "HTTP {statusCode, number}"
+}
