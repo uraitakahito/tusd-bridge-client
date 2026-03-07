@@ -1,6 +1,18 @@
 import type { IntlShape } from "@formatjs/intl";
 import type { FilesState } from "./files-state";
 import type { FileInfo } from "./types";
+import { h } from "./dom";
+
+interface FilesViewProps {
+  loadingVisible: boolean;
+  connectionBadge: {
+    hidden: boolean;
+    kind: "connected" | "reconnecting" | "disconnected";
+  };
+  files: FileInfo[] | null;
+  error: { hidden: boolean; message: string };
+  retryHidden: boolean;
+}
 
 export interface FilesUI {
   retryButton: HTMLButtonElement;
@@ -11,101 +23,105 @@ export function createFilesUI(
   root: HTMLElement,
   intl: IntlShape<string>,
 ): FilesUI {
-  // Title
-  const title = document.createElement("h1");
-  title.textContent = intl.formatMessage({ id: "files.title" });
-
   // Connection status badge
-  const connectionStatus = document.createElement("div");
-  connectionStatus.className = "connection-status";
+  const connectionStatus = h("div", { class: "connection-status" });
 
   // Loading indicator
-  const loadingIndicator = document.createElement("p");
-  loadingIndicator.className = "loading-indicator";
-  loadingIndicator.textContent = intl.formatMessage({ id: "files.loading" });
+  const loadingIndicator = h("p", { class: "loading-indicator" },
+    intl.formatMessage({ id: "files.loading" }));
 
   // File list table
-  const table = document.createElement("table");
-  table.className = "file-list";
-  const thead = document.createElement("thead");
-  const headerRow = document.createElement("tr");
   const columns = [
+    "files.column.id",
     "files.column.filename",
     "files.column.size",
     "files.column.status",
     "files.column.progress",
     "files.column.updatedAt",
+    "files.column.download",
   ];
-  for (const col of columns) {
-    const th = document.createElement("th");
-    th.textContent = intl.formatMessage({ id: col });
-    headerRow.appendChild(th);
-  }
-  thead.appendChild(headerRow);
-  table.appendChild(thead);
-  const tbody = document.createElement("tbody");
-  table.appendChild(tbody);
+  const tbody = h("tbody");
+  const table = h("table", { class: "file-list" },
+    h("thead", null,
+      h("tr", null, ...columns.map((col) =>
+        h("th", null, intl.formatMessage({ id: col })))),
+    ),
+    tbody,
+  );
 
   // Empty message
-  const emptyMessage = document.createElement("p");
-  emptyMessage.className = "empty-message";
-  emptyMessage.textContent = intl.formatMessage({ id: "files.empty" });
-  emptyMessage.hidden = true;
+  const emptyMessage = h("p", { class: "empty-message", hidden: true },
+    intl.formatMessage({ id: "files.empty" }));
 
   // Error message
-  const errorMessage = document.createElement("p");
-  errorMessage.className = "error-message";
-  errorMessage.hidden = true;
+  const errorMessage = h("p", { class: "error-message", hidden: true });
 
   // Retry button
-  const retryButton = document.createElement("button");
-  retryButton.textContent = intl.formatMessage({ id: "files.retry" });
-  retryButton.className = "retry-button";
-  retryButton.hidden = true;
+  const retryButton = h("button", { class: "retry-button", hidden: true },
+    intl.formatMessage({ id: "files.retry" }));
 
-  root.appendChild(title);
-  root.appendChild(connectionStatus);
-  root.appendChild(loadingIndicator);
-  root.appendChild(table);
-  root.appendChild(emptyMessage);
-  root.appendChild(errorMessage);
-  root.appendChild(retryButton);
+  root.append(
+    h("h1", null, intl.formatMessage({ id: "files.title" })),
+    connectionStatus, loadingIndicator, table,
+    emptyMessage, errorMessage, retryButton,
+  );
+
+  function deriveViewProps(state: FilesState): FilesViewProps {
+    switch (state.kind) {
+      case "loading":
+        return {
+          loadingVisible: true,
+          connectionBadge: { hidden: true, kind: "disconnected" },
+          files: [],
+          error: { hidden: true, message: "" },
+          retryHidden: true,
+        };
+      case "connected":
+        return {
+          loadingVisible: false,
+          connectionBadge: { hidden: false, kind: "connected" },
+          files: state.files,
+          error: { hidden: true, message: "" },
+          retryHidden: true,
+        };
+      case "reconnecting":
+        return {
+          loadingVisible: false,
+          connectionBadge: { hidden: false, kind: "reconnecting" },
+          files: null,
+          error: { hidden: true, message: "" },
+          retryHidden: true,
+        };
+      case "error":
+        return {
+          loadingVisible: false,
+          connectionBadge: { hidden: false, kind: "disconnected" },
+          files: state.files,
+          error: {
+            hidden: false,
+            message: intl.formatMessage({ id: "files.error" }, { message: state.message }),
+          },
+          retryHidden: false,
+        };
+    }
+  }
 
   const noFilename = intl.formatMessage({ id: "files.noFilename" });
 
   function renderFileRow(file: FileInfo): HTMLTableRowElement {
-    const row = document.createElement("tr");
+    const pct = (file.file_offset != null && file.file_size != null && file.file_size > 0)
+      ? `${(file.file_offset / file.file_size * 100).toFixed(1)}%` : "-";
 
-    const nameCell = document.createElement("td");
-    nameCell.textContent = file.filename ?? noFilename;
-    row.appendChild(nameCell);
-
-    const sizeCell = document.createElement("td");
-    sizeCell.textContent =
-      file.file_size != null
-        ? intl.formatNumber(file.file_size)
-        : "-";
-    row.appendChild(sizeCell);
-
-    const statusCell = document.createElement("td");
-    statusCell.textContent = file.display_status;
-    statusCell.className = `status-${file.display_status}`;
-    row.appendChild(statusCell);
-
-    const progressCell = document.createElement("td");
-    if (file.file_offset != null && file.file_size != null && file.file_size > 0) {
-      const pct = (file.file_offset / file.file_size * 100).toFixed(1);
-      progressCell.textContent = `${pct}%`;
-    } else {
-      progressCell.textContent = "-";
-    }
-    row.appendChild(progressCell);
-
-    const dateCell = document.createElement("td");
-    dateCell.textContent = file.updated_at.replace("T", " ").slice(0, 19);
-    row.appendChild(dateCell);
-
-    return row;
+    return h("tr", null,
+      h("td", { class: "file-id" }, file.upload_id),
+      h("td", null, file.filename ?? noFilename),
+      h("td", null, file.file_size != null ? intl.formatNumber(file.file_size) : "-"),
+      h("td", { class: `status-${file.display_status}` }, file.display_status),
+      h("td", null, pct),
+      h("td", null, file.updated_at.replace("T", " ").slice(0, 19)),
+      h("td", null, h("a", { href: file.download_url, download: "" },
+        intl.formatMessage({ id: "files.downloadLink" }))),
+    );
   }
 
   function renderFiles(files: FileInfo[]): void {
@@ -132,52 +148,25 @@ export function createFilesUI(
     }
   }
 
+  function applyViewProps(props: FilesViewProps): void {
+    loadingIndicator.hidden = !props.loadingVisible;
+    connectionStatus.hidden = props.connectionBadge.hidden;
+    if (!props.connectionBadge.hidden) {
+      setConnectionBadge(props.connectionBadge.kind);
+    }
+    if (props.files != null) {
+      renderFiles(props.files);
+    }
+    errorMessage.textContent = props.error.message;
+    errorMessage.hidden = props.error.hidden;
+    retryButton.hidden = props.retryHidden;
+  }
+
   return {
     retryButton,
 
     render(state: FilesState) {
-      switch (state.kind) {
-        case "loading":
-          loadingIndicator.hidden = false;
-          table.hidden = true;
-          emptyMessage.hidden = true;
-          connectionStatus.hidden = true;
-          errorMessage.hidden = true;
-          retryButton.hidden = true;
-          break;
-
-        case "connected":
-          loadingIndicator.hidden = true;
-          connectionStatus.hidden = false;
-          setConnectionBadge("connected");
-          renderFiles(state.files);
-          errorMessage.hidden = true;
-          retryButton.hidden = true;
-          break;
-
-        case "reconnecting":
-          loadingIndicator.hidden = true;
-          connectionStatus.hidden = false;
-          setConnectionBadge("reconnecting");
-          errorMessage.hidden = true;
-          retryButton.hidden = true;
-          break;
-
-        case "error":
-          loadingIndicator.hidden = true;
-          connectionStatus.hidden = false;
-          setConnectionBadge("disconnected");
-          if (state.files.length > 0) {
-            renderFiles(state.files);
-          }
-          errorMessage.textContent = intl.formatMessage(
-            { id: "files.error" },
-            { message: state.message },
-          );
-          errorMessage.hidden = false;
-          retryButton.hidden = false;
-          break;
-      }
+      applyViewProps(deriveViewProps(state));
     },
   };
 }

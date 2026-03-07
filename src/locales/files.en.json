@@ -1,5 +1,6 @@
 {
   "files.title": "File List",
+  "files.column.id": "ID",
   "files.column.filename": "Filename",
   "files.column.size": "Size",
   "files.column.status": "Status",
@@ -12,5 +13,7 @@
   "files.connection.disconnected": "Disconnected",
   "files.error": "Failed to load: {message}",
   "files.retry": "Retry",
-  "files.noFilename": "(no name)"
+  "files.noFilename": "(no name)",
+  "files.column.download": "Download",
+  "files.downloadLink": "Download"
 }

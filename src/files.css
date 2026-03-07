@@ -60,6 +60,13 @@
   margin-top: 12px;
 }
 
+.file-id {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .retry-button {
   margin-top: 8px;
 }

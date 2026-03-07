@@ -1,5 +1,6 @@
 {
   "files.title": "ファイル一覧",
+  "files.column.id": "ID",
   "files.column.filename": "ファイル名",
   "files.column.size": "サイズ",
   "files.column.status": "状態",
@@ -12,5 +13,7 @@
   "files.connection.disconnected": "切断",
   "files.error": "読み込み失敗: {message}",
   "files.retry": "再試行",
-  "files.noFilename": "(名前なし)"
+  "files.noFilename": "(名前なし)",
+  "files.column.download": "ダウンロード",
+  "files.downloadLink": "ダウンロード"
 }
