@@ -1,7 +1,7 @@
 import type { FilesState, FilesEvent, FilesTransitionResult } from "./files-state";
 import { transition } from "./files-state";
 import { createFilesUI } from "./files-ui";
-import { createFilesClient } from "./files-client";
+import { createFilesChannel } from "./files-channel";
 import { setupIntl } from "./i18n";
 import filesEn from "./locales/files.en.json";
 import filesJa from "./locales/files.ja.json";
@@ -26,13 +26,13 @@ function dispatch(event: FilesEvent): FilesTransitionResult {
   return result;
 }
 
-const client = createFilesClient(config.filesApiBaseUrl, dispatch);
+const channel = createFilesChannel(config.filesApiBaseUrl, dispatch);
 
 ui.retryButton.addEventListener("click", () => {
   const result = dispatch({ type: "RETRY" });
   if (!result.ok) return;
-  void client.fetchFiles();
+  void channel.subscribe();
 });
 
 ui.render(state);
-void client.fetchFiles();
+void channel.subscribe();

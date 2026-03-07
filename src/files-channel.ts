@@ -1,15 +1,15 @@
 import type { FilesEvent } from "./files-state";
 import type { FileInfo, FilesResponse } from "./types";
 
-export interface FilesClient {
-  fetchFiles(): Promise<void>;
-  disconnectSSE(): void;
+export interface FilesChannel {
+  subscribe(): Promise<void>;
+  unsubscribe(): void;
 }
 
-export function createFilesClient(
+export function createFilesChannel(
   baseUrl: string,
   dispatch: (event: FilesEvent) => void,
-): FilesClient {
+): FilesChannel {
   let eventSource: EventSource | null = null;
   let hasConnectedOnce = false;
 
@@ -54,7 +54,7 @@ export function createFilesClient(
   }
 
   return {
-    async fetchFiles() {
+    async subscribe() {
       try {
         const response = await fetch(`${baseUrl}/files`);
         if (!response.ok) {
@@ -78,7 +78,7 @@ export function createFilesClient(
       }
     },
 
-    disconnectSSE() {
+    unsubscribe() {
       if (eventSource) {
         eventSource.close();
         eventSource = null;
