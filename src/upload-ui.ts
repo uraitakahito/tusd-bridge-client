@@ -1,5 +1,6 @@
 import type { IntlShape } from "@formatjs/intl";
 import type { UploadState } from "./upload-state";
+import { h } from "./dom";
 
 export interface UI {
   endpointInput: HTMLInputElement;
@@ -15,21 +16,13 @@ export interface UI {
 
 export function createUI(root: HTMLElement, intl: IntlShape<string>): UI {
   // Endpoint input
-  const endpointLabel = document.createElement("label");
-  endpointLabel.textContent = intl.formatMessage({ id: "label.endpoint" });
-  endpointLabel.className = "endpoint-label";
-  const endpointInput = document.createElement("input");
-  endpointInput.type = "text";
-  endpointInput.value = "";
-  endpointInput.className = "endpoint-input";
-  endpointLabel.appendChild(endpointInput);
+  const endpointInput = h("input", { type: "text", class: "endpoint-input" });
+  const endpointLabel = h("label", { class: "endpoint-label" },
+    intl.formatMessage({ id: "label.endpoint" }), endpointInput,
+  );
 
   // Token input
-  const tokenLabel = document.createElement("label");
-  tokenLabel.textContent = intl.formatMessage({ id: "label.token" });
-  tokenLabel.className = "token-label";
-  const tokenInput = document.createElement("input");
-  tokenInput.type = "text";
+  //
   // Development JWT — signed with HS256, verifiable by the server.
   //
   // Secret : "dev-secret-do-not-use-in-production"
@@ -46,10 +39,10 @@ export function createUI(root: HTMLElement, intl: IntlShape<string>): UI {
   //   node -e "
   //   const crypto = require('crypto');
   //   const secret = 'dev-secret-do-not-use-in-production';
-  //   const h = Buffer.from(JSON.stringify({alg:'HS256',typ:'JWT'})).toString('base64url');
+  //   const hdr = Buffer.from(JSON.stringify({alg:'HS256',typ:'JWT'})).toString('base64url');
   //   const p = Buffer.from(JSON.stringify({sub:'user001'})).toString('base64url');
-  //   const s = crypto.createHmac('sha256',secret).update(h+'.'+p).digest('base64url');
-  //   console.log(h+'.'+p+'.'+s);
+  //   const s = crypto.createHmac('sha256',secret).update(hdr+'.'+p).digest('base64url');
+  //   console.log(hdr+'.'+p+'.'+s);
   //   "
   //
   // Server-side verification (Node.js):
@@ -59,76 +52,57 @@ export function createUI(root: HTMLElement, intl: IntlShape<string>): UI {
   //   if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected)))
   //     throw new Error("invalid signature");
   //   const claims = JSON.parse(Buffer.from(payload, "base64url").toString());
-  tokenInput.value =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMDAxIn0.B9OtmBkfpQ1UM2Wp94-aQGOu7qAiRWGpAMejfdCy8fU";
-  tokenInput.className = "token-input";
-  tokenLabel.appendChild(tokenInput);
+  const tokenInput = h("input", {
+    type: "text",
+    class: "token-input",
+    value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMDAxIn0.B9OtmBkfpQ1UM2Wp94-aQGOu7qAiRWGpAMejfdCy8fU",
+  });
+  const tokenLabel = h("label", { class: "token-label" },
+    intl.formatMessage({ id: "label.token" }), tokenInput,
+  );
 
   // Chunk size input
-  const chunkSizeLabel = document.createElement("label");
-  chunkSizeLabel.textContent = intl.formatMessage({ id: "label.chunkSize" });
-  chunkSizeLabel.className = "chunk-size-label";
-  const chunkSizeInput = document.createElement("input");
-  chunkSizeInput.type = "number";
-  chunkSizeInput.placeholder = intl.formatMessage({ id: "placeholder.chunkSize" });
-  chunkSizeInput.className = "chunk-size-input";
-  chunkSizeLabel.appendChild(chunkSizeInput);
+  const chunkSizeInput = h("input", {
+    type: "number",
+    class: "chunk-size-input",
+    placeholder: intl.formatMessage({ id: "placeholder.chunkSize" }),
+  });
+  const chunkSizeLabel = h("label", { class: "chunk-size-label" },
+    intl.formatMessage({ id: "label.chunkSize" }), chunkSizeInput,
+  );
 
   // File input
-  const fileInput = document.createElement("input");
-  fileInput.type = "file";
+  const fileInput = h("input", { type: "file" });
 
-  // Upload button
-  const uploadButton = document.createElement("button");
-  uploadButton.textContent = intl.formatMessage({ id: "button.upload" });
-  uploadButton.disabled = true;
-
-  // Pause button
-  const pauseButton = document.createElement("button");
-  pauseButton.textContent = intl.formatMessage({ id: "button.pause" });
-  pauseButton.hidden = true;
-
-  // Cancel button
-  const cancelButton = document.createElement("button");
-  cancelButton.textContent = intl.formatMessage({ id: "button.cancel" });
-  cancelButton.hidden = true;
+  // Buttons
+  const uploadButton = h("button", { disabled: true },
+    intl.formatMessage({ id: "button.upload" }));
+  const pauseButton = h("button", { hidden: true },
+    intl.formatMessage({ id: "button.pause" }));
+  const cancelButton = h("button", { hidden: true },
+    intl.formatMessage({ id: "button.cancel" }));
 
   // Progress bar
-  const progressContainer = document.createElement("div");
-  progressContainer.className = "progress-container";
-  const progressBar = document.createElement("div");
-  progressBar.className = "progress-bar";
-  progressContainer.appendChild(progressBar);
+  const progressBar = h("div", { class: "progress-bar" });
+  const progressContainer = h("div", { class: "progress-container" }, progressBar);
 
   // Status
-  const status = document.createElement("p");
+  const status = h("p");
 
   // Retry panel
-  const retryPanel = document.createElement("div");
-  retryPanel.className = "retry-panel";
-  retryPanel.hidden = true;
+  const retryMessage = h("p");
+  const retryCountLabel = h("span", { class: "retry-count" });
+  const manualRetryButton = h("button", { hidden: true },
+    intl.formatMessage({ id: "button.manualRetry" }));
+  const retryPanel = h("div", { class: "retry-panel", hidden: true },
+    retryMessage, retryCountLabel, manualRetryButton,
+  );
 
-  const retryMessage = document.createElement("p");
-  const retryCountLabel = document.createElement("span");
-  retryCountLabel.className = "retry-count";
-  const manualRetryButton = document.createElement("button");
-  manualRetryButton.textContent = intl.formatMessage({ id: "button.manualRetry" });
-  manualRetryButton.hidden = true;
-
-  retryPanel.appendChild(retryMessage);
-  retryPanel.appendChild(retryCountLabel);
-  retryPanel.appendChild(manualRetryButton);
-
-  root.appendChild(endpointLabel);
-  root.appendChild(tokenLabel);
-  root.appendChild(chunkSizeLabel);
-  root.appendChild(fileInput);
-  root.appendChild(uploadButton);
-  root.appendChild(pauseButton);
-  root.appendChild(cancelButton);
-  root.appendChild(progressContainer);
-  root.appendChild(status);
-  root.appendChild(retryPanel);
+  root.append(
+    endpointLabel, tokenLabel, chunkSizeLabel,
+    fileInput, uploadButton, pauseButton, cancelButton,
+    progressContainer, status, retryPanel,
+  );
 
   interface ViewProps {
     inputsDisabled: boolean;
