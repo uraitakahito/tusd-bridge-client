@@ -15,6 +15,8 @@
  *     retrying --> error : ERROR
  *     paused --> uploading : RESUME
  *     error --> uploading : MANUAL_RETRY
+ *     success --> uploading : RESTART
+ *     error --> uploading : RESTART
  *     uploading --> idle : CANCEL
  *     retrying --> idle : CANCEL
  *     paused --> idle : CANCEL
@@ -54,6 +56,7 @@ export type UploadEvent =
   | { type: "SUCCESS"; url: string }
   | { type: "ERROR"; message: string }
   | { type: "MANUAL_RETRY" }
+  | { type: "RESTART" }
   | { type: "PAUSE" }
   | { type: "RESUME" }
   | { type: "CANCEL" }
@@ -103,6 +106,9 @@ export function transition(
       return accepted({ kind: "error", message: event.message });
     case "MANUAL_RETRY":
       if (state.kind !== "error") return rejected(state, event);
+      return accepted({ kind: "uploading", bytesUploaded: 0, bytesTotal: 0 });
+    case "RESTART":
+      if (state.kind !== "success" && state.kind !== "error") return rejected(state, event);
       return accepted({ kind: "uploading", bytesUploaded: 0, bytesTotal: 0 });
     case "PAUSE":
       if (state.kind === "uploading")
