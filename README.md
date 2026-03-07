@@ -7,17 +7,6 @@
 - **tusd**: TUSプロトコル対応のファイルアップロードサーバー
 - **tusd-bridge**: tusdのgRPCフックを受け取り、アップロードイベントを永続化するブリッジサーバー
 
-## Run
-
-```console
-% npm run build
-% docker run -d --init --rm -p 80:80 --mount type=bind,src=`pwd`,dst=/usr/share/nginx/html --mount type=bind,src=`pwd`/nginx.conf,dst=/etc/nginx/conf.d/default.conf --name nginx-container nginx
-```
-
-## tusd並びにtusd-bridgeの起動
-
-[tusd-bridge](https://github.com/uraitakahito/tusd-bridge)の[README.md](https://raw.githubusercontent.com/uraitakahito/tusd-bridge/refs/heads/main/README.md)を参考にしてください。
-
 ## 開発環境のセットアップ (Docker)
 
 Please download the required files by following these steps:
@@ -45,6 +34,12 @@ npm run lint:fix   # ESLintで自動修正
 npm run docs       # TypeDocでAPIドキュメント生成
 ```
 
+## ホストOSでNginxを起動
+
+```console
+% docker run -d --init --rm -p 80:80 --mount type=bind,src=`pwd`,dst=/usr/share/nginx/html --mount type=bind,src=`pwd`/nginx.conf,dst=/etc/nginx/conf.d/default.conf --name nginx-container nginx
+```
+
 ## Debugging with Chrome DevTools
 
 This project generates source maps (`sourcemap: true` in `rollup.config.ts`), so you can step through the original TypeScript source in Chrome DevTools.
@@ -64,3 +59,8 @@ This project generates source maps (`sourcemap: true` in `rollup.config.ts`), so
 | Step over (next line) | F10 |
 | Step into (enter function) | F11 |
 | Step out (exit function) | Shift + F11 |
+
+## tusd並びにtusd-bridgeの起動
+
+[tusd-bridge](https://github.com/uraitakahito/tusd-bridge)の[README.md](https://raw.githubusercontent.com/uraitakahito/tusd-bridge/refs/heads/main/README.md)を参考にしてください。
+
