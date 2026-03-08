@@ -15,5 +15,8 @@
   "files.retry": "再試行",
   "files.noFilename": "(名前なし)",
   "files.column.download": "ダウンロード",
-  "files.downloadLink": "ダウンロード"
+  "files.downloadLink": "ダウンロード",
+  "files.column.rerun": "再実行",
+  "files.rerun": "再実行",
+  "files.rerunError": "後処理の再実行に失敗しました。"
 }
