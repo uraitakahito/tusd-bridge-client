@@ -11,7 +11,7 @@ import { config } from "./config";
 const intl = setupIntl({ en: filesEn, ja: filesJa });
 
 const root = document.getElementById("app")!;
-const ui = createFilesUI(root, intl, config.filesApiBaseUrl);
+const ui = createFilesUI(root, intl, config.filesApiBaseUrl, config.storageBaseUrl);
 
 const { dispatch, getState } = createDispatch<FilesState, FilesEvent>(
   { kind: "loading" },
