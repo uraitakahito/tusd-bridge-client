@@ -1,6 +1,6 @@
 import type { IntlShape } from "@formatjs/intl";
 import type { FilesState } from "./files-state";
-import type { FileInfo } from "./types";
+import type { UploadRecord } from "./types";
 import { h } from "./dom";
 
 interface FilesViewProps {
@@ -9,7 +9,7 @@ interface FilesViewProps {
     hidden: boolean;
     kind: "connected" | "reconnecting" | "disconnected";
   };
-  files: FileInfo[] | null;
+  files: UploadRecord[] | null;
   error: { hidden: boolean; message: string };
   retryHidden: boolean;
 }
@@ -110,9 +110,9 @@ export function createFilesUI(
 
   const noFilename = intl.formatMessage({ id: "files.noFilename" });
 
-  function renderFileRow(file: FileInfo): HTMLTableRowElement {
-    const pct = (file.file_offset != null && file.file_size != null && file.file_size > 0)
-      ? `${(file.file_offset / file.file_size * 100).toFixed(1)}%` : "-";
+  function renderFileRow(file: UploadRecord): HTMLTableRowElement {
+    const pct = (file.file_offset != null && file.original.size != null && file.original.size > 0)
+      ? `${(file.file_offset / file.original.size * 100).toFixed(1)}%` : "-";
 
     const rerunBtn = h("button", {
       class: "rerun-button",
@@ -136,18 +136,18 @@ export function createFilesUI(
 
     return h("tr", null,
       h("td", { class: "file-id" }, file.upload_id),
-      h("td", null, file.filename ?? noFilename),
-      h("td", null, file.file_size != null ? intl.formatNumber(file.file_size) : "-"),
+      h("td", null, file.original.filename ?? noFilename),
+      h("td", null, file.original.size != null ? intl.formatNumber(file.original.size) : "-"),
       h("td", { class: `status-${file.display_status}` }, file.display_status),
       h("td", null, pct),
       h("td", null, file.updated_at.replace("T", " ").slice(0, 19)),
-      h("td", null, h("a", { href: file.download_url, download: "" },
+      h("td", null, h("a", { href: file.original.url, download: "" },
         intl.formatMessage({ id: "files.downloadLink" }))),
       h("td", null, rerunBtn),
     );
   }
 
-  function renderFiles(files: FileInfo[]): void {
+  function renderFiles(files: UploadRecord[]): void {
     tbody.innerHTML = "";
     for (const file of files) {
       tbody.appendChild(renderFileRow(file));

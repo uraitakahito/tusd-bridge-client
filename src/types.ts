@@ -9,20 +9,24 @@ export interface UploadParams {
   chunkSize: number;
 }
 
-export interface FileInfo {
-  upload_id: string;
-  display_status: string;
-  download_url: string;
-  file_size: number | null;
-  file_offset: number | null;
+export interface OriginalFile {
   filename: string | null;
   filetype: string | null;
-  conversion_summary: unknown;
+  url: string;
+  size: number | null;
+}
+
+export interface UploadRecord {
+  upload_id: string;
+  display_status: string;
+  original: OriginalFile;
+  converted: unknown; // TODO: ConvertedFile[] 型を定義して置き換える
+  file_offset: number | null;
   updated_at: string;
 }
 
 export interface FilesResponse {
-  files: FileInfo[];
+  files: UploadRecord[];
   last_event_id: number;
   next_cursor: string | null;
 }
