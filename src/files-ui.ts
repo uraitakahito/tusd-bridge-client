@@ -19,10 +19,22 @@ export interface FilesUI {
   render(state: FilesState): void;
 }
 
+/**
+ * ストレージの絶対 URL をプロキシ経由の相対パスに変換する。
+ *
+ * 例: "http://minio:9000/bucket/file.stl"
+ *   → "/storage/bucket/file.stl"
+ */
+function toProxiedUrl(absoluteUrl: string, proxyBaseUrl: string): string {
+  const url = new URL(absoluteUrl);
+  return `${proxyBaseUrl}${url.pathname}${url.search}`;
+}
+
 export function createFilesUI(
   root: HTMLElement,
   intl: IntlShape<string>,
   baseUrl: string,
+  storageBaseUrl: string,
 ): FilesUI {
   // Connection status badge
   const connectionStatus = h("div", { class: "connection-status" });
@@ -146,33 +158,12 @@ export function createFilesUI(
       );
     }
     if (converted?.url) {
-      const convertedUrl = converted.url;
       const stlFilename = orig?.filename.replace(/\.glb$/i, ".stl") ?? converted.filename;
-      const stlLink = h("a", { href: convertedUrl, download: stlFilename },
-        intl.formatMessage({ id: "files.downloadLink.stl" }));
-      // 変換後ファイル（STL）の URL はクロスオリジンのため、
-      // <a download="…"> のファイル名指定がブラウザに無視され、
-      // URL パス末尾のハッシュ値がそのままファイル名になってしまう。
-      // fetch → Blob URL に変換することで同一オリジン扱いとなり、
-      // download 属性のファイル名が正しく適用される。
-      //
-      // TODO: STL の配信を nginx リバースプロキシ経由などで同一オリジンにすれば、
-      // GLB と同様に <a download="…"> だけでファイル名を制御でき、
-      // この fetch → Blob URL の変換処理は不要になる。
-      stlLink.addEventListener("click", (e) => {
-        e.preventDefault();
-        void fetch(convertedUrl)
-          .then((res) => res.blob())
-          .then((blob) => {
-            const blobUrl = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = blobUrl;
-            a.download = stlFilename;
-            a.click();
-            URL.revokeObjectURL(blobUrl);
-          });
-      });
-      downloadLinks.push(stlLink);
+      const proxiedUrl = toProxiedUrl(converted.url, storageBaseUrl);
+      downloadLinks.push(
+        h("a", { href: proxiedUrl, download: stlFilename },
+          intl.formatMessage({ id: "files.downloadLink.stl" })),
+      );
     }
     const downloadCell = downloadLinks.length > 0
       ? h("span", { class: "download-links" }, ...downloadLinks)

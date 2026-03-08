@@ -7,4 +7,10 @@ export const config = {
    * nginx.conf の `location /api/` と一致させる必要がある。
    */
   filesApiBaseUrl: "/api",
+  /**
+   * オブジェクトストレージの baseUrl（nginx リバースプロキシ経由）。
+   * 同一オリジンにすることで <a download="…"> のファイル名指定が有効になる。
+   * nginx.conf の `location /storage/` と一致させる必要がある。
+   */
+  storageBaseUrl: "/storage",
 } as const;
