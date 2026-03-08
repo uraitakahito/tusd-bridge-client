@@ -6,7 +6,15 @@ import { createDispatch } from "./fsm";
 import { setupIntl } from "./i18n";
 import uploadEn from "./locales/upload.en.json";
 import uploadJa from "./locales/upload.ja.json";
+import type { IntlShape } from "./i18n";
 import { config } from "./config";
+
+function validateGlbFile(file: File, intl: IntlShape<string>): string | null {
+  if (!file.name.toLowerCase().endsWith(".glb")) {
+    return intl.formatMessage({ id: "validation.notGlb" }, { name: file.name });
+  }
+  return null;
+}
 
 const intl = setupIntl({ en: uploadEn, ja: uploadJa });
 
@@ -50,6 +58,15 @@ ui.uploadButton.addEventListener("click", () => {
     ? "RESTART" : "START";
   const result = dispatch({ type: eventType });
   if (!result.ok) return;
+
+  const validationError = validateGlbFile(file, intl);
+  if (validationError) {
+    dispatch({ type: "VALIDATION_ERROR", message: validationError });
+    return;
+  }
+
+  const validatedResult = dispatch({ type: "VALIDATED" });
+  if (!validatedResult.ok) return;
   uploader.startUpload({
     file,
     endpoint: ui.endpointInput.value,

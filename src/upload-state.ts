@@ -4,7 +4,9 @@
  * ```mermaid
  * stateDiagram-v2
  *     [*] --> idle
- *     idle --> uploading : START
+ *     idle --> validating : START
+ *     validating --> uploading : VALIDATED
+ *     validating --> error : VALIDATION_ERROR
  *     uploading --> uploading : PROGRESS
  *     uploading --> retrying : RETRY
  *     uploading --> paused : PAUSE
@@ -15,8 +17,8 @@
  *     retrying --> error : ERROR
  *     paused --> uploading : RESUME
  *     error --> uploading : MANUAL_RETRY
- *     success --> uploading : RESTART
- *     error --> uploading : RESTART
+ *     success --> validating : RESTART
+ *     error --> validating : RESTART
  *     uploading --> idle : CANCEL
  *     retrying --> idle : CANCEL
  *     paused --> idle : CANCEL
@@ -31,6 +33,7 @@
 
 export type UploadState =
   | { kind: "idle" }
+  | { kind: "validating" }
   | { kind: "uploading"; bytesUploaded: number; bytesTotal: number }
   | {
       kind: "retrying";
@@ -47,6 +50,8 @@ export type UploadState =
 
 export type UploadEvent =
   | { type: "START" }
+  | { type: "VALIDATED" }
+  | { type: "VALIDATION_ERROR"; message: string }
   | { type: "PROGRESS"; bytesUploaded: number; bytesTotal: number }
   | {
       type: "RETRY";
@@ -73,8 +78,15 @@ const toUploading = (bytesUploaded: number, bytesTotal: number): UploadState =>
 
 const table: TransitionTable<UploadState, UploadEvent> = {
   idle: {
-    START: () => toUploading(0, 0),
+    START: () => ({ kind: "validating" }),
     RESET: toIdle,
+  },
+  validating: {
+    VALIDATED: () => toUploading(0, 0),
+    VALIDATION_ERROR: (_s, e) => ({
+      kind: "error", message: e.message,
+      bytesUploaded: 0, bytesTotal: 0,
+    }),
   },
   uploading: {
     PROGRESS: (_s, e) => toUploading(e.bytesUploaded, e.bytesTotal),
@@ -113,11 +125,11 @@ const table: TransitionTable<UploadState, UploadEvent> = {
   },
   error: {
     MANUAL_RETRY: () => toUploading(0, 0),
-    RESTART:      () => toUploading(0, 0),
+    RESTART:      () => ({ kind: "validating" }),
     RESET:        toIdle,
   },
   success: {
-    RESTART: () => toUploading(0, 0),
+    RESTART: () => ({ kind: "validating" }),
     RESET:   toIdle,
   },
 };

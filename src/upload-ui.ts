@@ -72,7 +72,7 @@ export function createUI(root: HTMLElement, intl: IntlShape<string>): UI {
   );
 
   // File input
-  const fileInput = h("input", { type: "file" });
+  const fileInput = h("input", { type: "file", accept: ".glb" });
 
   // Buttons
   const uploadButton = h("button", { disabled: true },
@@ -156,6 +156,19 @@ export function createUI(root: HTMLElement, intl: IntlShape<string>): UI {
           },
           progress: { visible: false, width: "0%", modifier: null },
           statusText: "",
+        };
+      case "validating":
+        return {
+          inputsDisabled: true,
+          uploadButtonDisabled: true,
+          pauseButton: { hidden: true, text: intl.formatMessage({ id: "button.pause" }) },
+          cancelHidden: true,
+          retryPanel: {
+            hidden: true, message: "", countLabel: "",
+            manualRetryButton: { hidden: true, disabled: true },
+          },
+          progress: { visible: false, width: "0%", modifier: null },
+          statusText: intl.formatMessage({ id: "status.validating" }),
         };
       case "uploading": {
         const { width, statusText } = formatProgress(

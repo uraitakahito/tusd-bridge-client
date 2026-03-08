@@ -18,5 +18,7 @@
   "retry.failed": "Upload failed: {message}",
   "retry.allFailed": "All retries have been exhausted",
   "error.networkError": "Network error",
-  "error.httpStatus": "HTTP {statusCode, number}"
+  "error.httpStatus": "HTTP {statusCode, number}",
+  "status.validating": "Validating file...",
+  "validation.notGlb": "Only GLB files are allowed. Selected file \"{name}\" is not a .glb file."
 }
