@@ -111,8 +111,10 @@ export function createFilesUI(
   const noFilename = intl.formatMessage({ id: "files.noFilename" });
 
   function renderFileRow(file: UploadRecord): HTMLTableRowElement {
-    const pct = (file.file_offset != null && file.original.size != null && file.original.size > 0)
-      ? `${(file.file_offset / file.original.size * 100).toFixed(1)}%` : "-";
+    const orig = file.files.find((f) => f.role === "original");
+    const size = orig?.size;
+    const pct = (file.file_offset != null && size != null && size > 0)
+      ? `${(file.file_offset / size * 100).toFixed(1)}%` : "-";
 
     const rerunBtn = h("button", {
       class: "rerun-button",
@@ -134,15 +136,19 @@ export function createFilesUI(
       });
     });
 
+    const downloadCell = orig
+      ? h("a", { href: orig.url, download: "" },
+          intl.formatMessage({ id: "files.downloadLink" }))
+      : "-";
+
     return h("tr", null,
       h("td", { class: "file-id" }, file.upload_id),
-      h("td", null, file.original.filename ?? noFilename),
-      h("td", null, file.original.size != null ? intl.formatNumber(file.original.size) : "-"),
+      h("td", null, orig?.filename ?? noFilename),
+      h("td", null, size != null ? intl.formatNumber(size) : "-"),
       h("td", { class: `status-${file.display_status}` }, file.display_status),
       h("td", null, pct),
       h("td", null, file.updated_at.replace("T", " ").slice(0, 19)),
-      h("td", null, h("a", { href: file.original.url, download: "" },
-        intl.formatMessage({ id: "files.downloadLink" }))),
+      h("td", null, downloadCell),
       h("td", null, rerunBtn),
     );
   }
