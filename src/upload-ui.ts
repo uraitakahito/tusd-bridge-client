@@ -56,6 +56,8 @@ export function createUI(root: HTMLElement, intl: IntlShape<string>): UI {
     type: "text",
     class: "token-input",
     value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMDAxIn0.B9OtmBkfpQ1UM2Wp94-aQGOu7qAiRWGpAMejfdCy8fU",
+    readOnly: true,
+    disabled: true,
   });
   const tokenLabel = h("label", { class: "token-label" },
     intl.formatMessage({ id: "label.token" }), tokenInput,
@@ -267,7 +269,6 @@ export function createUI(root: HTMLElement, intl: IntlShape<string>): UI {
 
   function applyViewProps(props: ViewProps): void {
     endpointInput.disabled = props.inputsDisabled;
-    tokenInput.disabled = props.inputsDisabled;
     chunkSizeInput.disabled = props.inputsDisabled;
     fileInput.disabled = props.inputsDisabled;
     uploadButton.disabled = props.uploadButtonDisabled;
