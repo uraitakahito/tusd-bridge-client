@@ -35,12 +35,11 @@ npm run docs       # TypeDocでAPIドキュメント生成
 ## ホストOSでNginxを起動
 
 ```console
-% docker run -d --init --rm -p 80:80 --mount type=bind,src=`pwd`,dst=/usr/share/nginx/html --mount type=bind,src=`pwd`/nginx.conf,dst=/etc/nginx/conf.d/default.conf --name nginx-container nginx
-% docker network connect tusd-bridge_default nginx-container
+% docker run -d --init --rm -p 80:80 --network tusd-bridge_default --mount type=bind,src=`pwd`,dst=/usr/share/nginx/html --mount type=bind,src=`pwd`/nginx.conf,dst=/etc/nginx/conf.d/default.conf --name nginx-container nginx
 ```
 
-`nginx.conf` はオブジェクトストレージ（MinIO）へのリバースプロキシにコンテナ名 `minio` を使用しているため、
-nginx コンテナを tusd-bridge の Docker Compose ネットワークに接続する必要があります。
+`nginx.conf` はリバースプロキシ先にコンテナ名（`tusd-bridge`, `minio`）を使用しているため、
+**tusd-bridge の Docker Compose ネットワークを指定して起動する必要があります。**
 
 ## Debugging with Chrome DevTools
 
