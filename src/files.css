@@ -71,6 +71,11 @@
   margin-top: 8px;
 }
 
+.download-links {
+  display: flex;
+  gap: 0.5em;
+}
+
 .rerun-button {
   padding: 4px 8px;
   cursor: pointer;

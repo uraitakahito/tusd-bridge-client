@@ -136,9 +136,45 @@ export function createFilesUI(
       });
     });
 
-    const downloadCell = orig
-      ? h("a", { href: orig.url, download: "" },
-          intl.formatMessage({ id: "files.downloadLink" }))
+    const converted = file.files.find((f) => f.role === "converted");
+
+    const downloadLinks: (Node | string)[] = [];
+    if (orig) {
+      downloadLinks.push(
+        h("a", { href: orig.url, download: "" },
+          intl.formatMessage({ id: "files.downloadLink.glb" })),
+      );
+    }
+    if (converted) {
+      const stlFilename = orig?.filename.replace(/\.glb$/i, ".stl") ?? converted.filename;
+      const stlLink = h("a", { href: converted.url, download: stlFilename },
+        intl.formatMessage({ id: "files.downloadLink.stl" }));
+      // 変換後ファイル（STL）の URL はクロスオリジンのため、
+      // <a download="…"> のファイル名指定がブラウザに無視され、
+      // URL パス末尾のハッシュ値がそのままファイル名になってしまう。
+      // fetch → Blob URL に変換することで同一オリジン扱いとなり、
+      // download 属性のファイル名が正しく適用される。
+      //
+      // TODO: STL の配信を nginx リバースプロキシ経由などで同一オリジンにすれば、
+      // GLB と同様に <a download="…"> だけでファイル名を制御でき、
+      // この fetch → Blob URL の変換処理は不要になる。
+      stlLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        void fetch(converted.url)
+          .then((res) => res.blob())
+          .then((blob) => {
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = blobUrl;
+            a.download = stlFilename;
+            a.click();
+            URL.revokeObjectURL(blobUrl);
+          });
+      });
+      downloadLinks.push(stlLink);
+    }
+    const downloadCell = downloadLinks.length > 0
+      ? h("span", { class: "download-links" }, ...downloadLinks)
       : "-";
 
     return h("tr", null,
