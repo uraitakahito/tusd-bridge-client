@@ -13,7 +13,7 @@ export interface FileEntry {
   role: "original" | "converted";
   filename: string;
   filetype: string;
-  url: string;
+  url: string | null;
   size: number;
 }
 

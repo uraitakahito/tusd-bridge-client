@@ -139,15 +139,16 @@ export function createFilesUI(
     const converted = file.files.find((f) => f.role === "converted");
 
     const downloadLinks: (Node | string)[] = [];
-    if (orig) {
+    if (orig?.url) {
       downloadLinks.push(
         h("a", { href: orig.url, download: "" },
           intl.formatMessage({ id: "files.downloadLink.glb" })),
       );
     }
-    if (converted) {
+    if (converted?.url) {
+      const convertedUrl = converted.url;
       const stlFilename = orig?.filename.replace(/\.glb$/i, ".stl") ?? converted.filename;
-      const stlLink = h("a", { href: converted.url, download: stlFilename },
+      const stlLink = h("a", { href: convertedUrl, download: stlFilename },
         intl.formatMessage({ id: "files.downloadLink.stl" }));
       // 変換後ファイル（STL）の URL はクロスオリジンのため、
       // <a download="…"> のファイル名指定がブラウザに無視され、
@@ -160,7 +161,7 @@ export function createFilesUI(
       // この fetch → Blob URL の変換処理は不要になる。
       stlLink.addEventListener("click", (e) => {
         e.preventDefault();
-        void fetch(converted.url)
+        void fetch(convertedUrl)
           .then((res) => res.blob())
           .then((blob) => {
             const blobUrl = URL.createObjectURL(blob);
