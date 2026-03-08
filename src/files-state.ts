@@ -18,24 +18,24 @@
 
 import type { TransitionTable } from "./fsm";
 import { createTransition } from "./fsm";
-import type { FileInfo } from "./types";
+import type { UploadRecord } from "./types";
 
 export type FilesState =
   | { kind: "loading" }
-  | { kind: "connected"; files: FileInfo[]; lastEventId: number }
-  | { kind: "reconnecting"; files: FileInfo[]; lastEventId: number }
-  | { kind: "error"; message: string; files: FileInfo[] };
+  | { kind: "connected"; files: UploadRecord[]; lastEventId: number }
+  | { kind: "reconnecting"; files: UploadRecord[]; lastEventId: number }
+  | { kind: "error"; message: string; files: UploadRecord[] };
 
 export type FilesEvent =
-  | { type: "FILES_LOADED"; files: FileInfo[]; lastEventId: number }
+  | { type: "FILES_LOADED"; files: UploadRecord[]; lastEventId: number }
   | { type: "LOAD_ERROR"; message: string }
-  | { type: "FILE_EVENT"; file: FileInfo; eventId: number }
+  | { type: "FILE_EVENT"; file: UploadRecord; eventId: number }
   | { type: "SSE_DISCONNECT" }
   | { type: "SSE_RECONNECT" }
   | { type: "RECONNECT_FAILED"; message: string }
   | { type: "RETRY" };
 
-function upsertFile(files: FileInfo[], file: FileInfo): FileInfo[] {
+function upsertFile(files: UploadRecord[], file: UploadRecord): UploadRecord[] {
   const index = files.findIndex((f) => f.upload_id === file.upload_id);
   if (index >= 0) {
     const updated = [...files];

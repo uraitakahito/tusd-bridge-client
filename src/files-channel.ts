@@ -1,5 +1,5 @@
 import type { FilesEvent } from "./files-state";
-import type { FileInfo, FilesResponse } from "./types";
+import type { UploadRecord, FilesResponse } from "./types";
 
 export interface FilesChannel {
   subscribe(): Promise<void>;
@@ -32,7 +32,7 @@ export function createFilesChannel(
     eventSource.addEventListener(
       "file_status_changed",
       (event: MessageEvent<string>) => {
-        const file = JSON.parse(event.data) as FileInfo;
+        const file = JSON.parse(event.data) as UploadRecord;
         const eventId = Number(event.lastEventId);
         dispatch({ type: "FILE_EVENT", file, eventId });
       },
