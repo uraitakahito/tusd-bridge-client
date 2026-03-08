@@ -18,5 +18,7 @@
   "retry.failed": "アップロード失敗: {message}",
   "retry.allFailed": "全てのリトライが失敗しました",
   "error.networkError": "ネットワークエラー",
-  "error.httpStatus": "HTTP {statusCode, number}"
+  "error.httpStatus": "HTTP {statusCode, number}",
+  "status.validating": "ファイルを検証中...",
+  "validation.notGlb": "GLBファイルのみアップロードできます。選択されたファイル「{name}」は.glbファイルではありません。"
 }

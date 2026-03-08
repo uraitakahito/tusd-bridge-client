@@ -1,6 +1,7 @@
 # tusd-bridge-client
 
-tusdやtusd-bridgeと連携するフロントエンドWebアプリケーション。
+GLB形式のファイルをアップロードし、結果を一覧形式で取得できるWebアプリケーションです。
+tusdやtusd-bridgeやAirflowと連携します。
 
 - **[tusd](https://tus.github.io/tusd/)**: [TUSプロトコル](https://tus.io/)対応のファイルアップロードサーバー
 - **[tusd-bridge](https://github.com/uraitakahito/tusd-bridge)**: tusdのgRPCフックから呼び出され、ファイルのアップロードイベントやメタ情報を永続化したり、tusd-bridge-clientに通知したりする
