@@ -22,6 +22,7 @@ export interface FilesUI {
 export function createFilesUI(
   root: HTMLElement,
   intl: IntlShape<string>,
+  baseUrl: string,
 ): FilesUI {
   // Connection status badge
   const connectionStatus = h("div", { class: "connection-status" });
@@ -39,6 +40,7 @@ export function createFilesUI(
     "files.column.progress",
     "files.column.updatedAt",
     "files.column.download",
+    "files.column.rerun",
   ];
   const tbody = h("tbody");
   const table = h("table", { class: "file-list" },
@@ -112,6 +114,26 @@ export function createFilesUI(
     const pct = (file.file_offset != null && file.file_size != null && file.file_size > 0)
       ? `${(file.file_offset / file.file_size * 100).toFixed(1)}%` : "-";
 
+    const rerunBtn = h("button", {
+      class: "rerun-button",
+      disabled: file.display_status !== "failed" && file.display_status !== "processed",
+    }, intl.formatMessage({ id: "files.rerun" }));
+
+    rerunBtn.addEventListener("click", () => {
+      rerunBtn.disabled = true;
+      fetch(`${baseUrl}/files/${file.upload_id}/rerun`, {
+        method: "POST",
+      }).then((res) => {
+        if (!res.ok) {
+          rerunBtn.disabled = false;
+          alert(intl.formatMessage({ id: "files.rerunError" }));
+        }
+      }).catch(() => {
+        rerunBtn.disabled = false;
+        alert(intl.formatMessage({ id: "files.rerunError" }));
+      });
+    });
+
     return h("tr", null,
       h("td", { class: "file-id" }, file.upload_id),
       h("td", null, file.filename ?? noFilename),
@@ -121,6 +143,7 @@ export function createFilesUI(
       h("td", null, file.updated_at.replace("T", " ").slice(0, 19)),
       h("td", null, h("a", { href: file.download_url, download: "" },
         intl.formatMessage({ id: "files.downloadLink" }))),
+      h("td", null, rerunBtn),
     );
   }
 

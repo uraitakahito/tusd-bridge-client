@@ -15,5 +15,8 @@
   "files.retry": "Retry",
   "files.noFilename": "(no name)",
   "files.column.download": "Download",
-  "files.downloadLink": "Download"
+  "files.downloadLink": "Download",
+  "files.column.rerun": "Rerun",
+  "files.rerun": "Rerun",
+  "files.rerunError": "Failed to rerun post-processing."
 }
